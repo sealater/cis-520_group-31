@@ -7,7 +7,7 @@
 #include "threads/interrupt.h"
 #include "threads/synch.h"
 #include "threads/thread.h"
-  
+
 /* See [8254] for hardware details of the 8254 timer chip. */
 
 #if TIMER_FREQ < 19
@@ -60,7 +60,7 @@ timer_calibrate (void)
   /* Refine the next 8 bits of loops_per_tick. */
   high_bit = loops_per_tick;
   for (test_bit = high_bit >> 1; test_bit != high_bit >> 10; test_bit >>= 1)
-    if (!too_many_loops (high_bit | test_bit))
+    if (!too_many_loops (loops_per_tick | test_bit))
       loops_per_tick |= test_bit;
 
   printf ("%'"PRIu64" loops/s.\n", (uint64_t) loops_per_tick * TIMER_FREQ);
@@ -89,11 +89,26 @@ timer_elapsed (int64_t then)
 void
 timer_sleep (int64_t ticks) 
 {
-  int64_t start = timer_ticks ();
+  /*
+  int64_t start = timer_ticks();
+  ASSERT (intr_get_level () == INTR_ON);
+  while (timer_elapsed(start) < ticks)
+    thread_yield();
+  */
+
+  /* Solution Code */
+
+  /* For alarm-negative && alarm-zero */
+  if (ticks <= 0) return;
 
   ASSERT (intr_get_level () == INTR_ON);
-  while (timer_elapsed (start) < ticks) 
-    thread_yield ();
+  enum intr_level old_level = intr_disable();
+
+  /* Blocks current thread for ticks */
+  thread_current()->ticks_blocked = ticks;
+  thread_block();
+
+  intr_set_level(old_level);
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -170,8 +185,21 @@ timer_print_stats (void)
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
+  /* Solution Code */
+  thread_foreach(checkInvoke, NULL);
+
   ticks++;
   thread_tick ();
+
+  /* Solution Code */
+  if (thread_mlfqs)
+  {
+    mlfqs_inc_recent_cpu();
+	if (ticks % TIMER_FREQ == 0)
+	  mlfqs_update_load_avg_and_recent_cpu();
+	else if (ticks % 4 == 0)
+	  mlfqs_update_priority(thread_current());
+  }
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer
