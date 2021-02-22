@@ -96,7 +96,7 @@ timer_sleep (int64_t ticks)
     thread_yield();
   */
 
-  /* Solution Code */
+
 
   /* For alarm-negative && alarm-zero */
   if (ticks <= 0) return;
@@ -185,13 +185,13 @@ timer_print_stats (void)
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
-  /* Solution Code */
+
   thread_foreach(checkInvoke, NULL);
 
   ticks++;
   thread_tick ();
 
-  /* Solution Code */
+
   if (thread_mlfqs)
   {
     mlfqs_inc_recent_cpu();

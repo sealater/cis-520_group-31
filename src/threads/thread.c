@@ -59,7 +59,7 @@ static unsigned thread_ticks;   /* # of timer ticks since last yield. */
    Controlled by kernel command-line option "-o mlfqs". */
 bool thread_mlfqs;
 
-/* Solution Code */
+
 fixed_t load_avg;
 
 static void kernel_thread (thread_func *, void *aux);
@@ -74,7 +74,7 @@ static void schedule (void);
 void thread_schedule_tail (struct thread *prev);
 static tid_t allocate_tid (void);
 
-/* Solution Code */
+
 void
 checkInvoke(struct thread *t, void *aux UNUSED)
 {
@@ -125,7 +125,7 @@ thread_start (void)
   sema_init (&idle_started, 0);
   thread_create ("idle", PRI_MIN, idle, &idle_started);
 
-  /* Solution Code */
+
   load_avg = FP_CONST (0);
 
   /* Start preemptive thread scheduling. */
@@ -201,7 +201,7 @@ thread_create (const char *name, int priority,
   init_thread (t, name, priority);
   tid = t->tid = allocate_tid ();
 
-  /* Solution Code */
+
   t->ticks_blocked = 0;
 
   /* Stack frame for kernel_thread(). */
@@ -222,7 +222,7 @@ thread_create (const char *name, int priority,
   /* Add to run queue. */
   thread_unblock (t);
 
-  /* Solution Code */
+
   /* Preempt the current thread */
   if (thread_current()->priority < priority)
     thread_yield();
@@ -246,7 +246,7 @@ thread_block (void)
   schedule ();
 }
 
-/* Solution Code */
+
 /* Function for thread priority comparison. */
 bool
 thread_cmp_priority(const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
@@ -347,7 +347,7 @@ thread_unblock (struct thread *t)
 
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
-  /* Solution Code */
+
   list_insert_ordered(&ready_list, &t->elem, (list_less_func *)&thread_cmp_priority, NULL);
 
   t->status = THREAD_READY;
@@ -420,7 +420,7 @@ thread_yield (void)
 
   old_level = intr_disable ();
   if (cur != idle_thread) 
-	/* Solution Code */
+
     list_insert_ordered(&ready_list, &cur->elem, (list_less_func *)&thread_cmp_priority, NULL);
 
   cur->status = THREAD_READY;
@@ -454,7 +454,7 @@ thread_set_priority (int new_priority)
   thread_yield();
   */
 
-  /* Solution Code */
+
   if (thread_mlfqs)
     return;
   enum intr_level old_level = intr_disable();
@@ -481,7 +481,7 @@ thread_get_priority (void)
 void
 thread_set_nice (int nice UNUSED) 
 {
-  /* Solution Code */
+
   thread_current()->nice = nice;
   mlfqs_update_priority(thread_current());
   thread_yield();
@@ -491,7 +491,7 @@ thread_set_nice (int nice UNUSED)
 int
 thread_get_nice (void) 
 {
-  /* Solution Code */
+
   return thread_current()->nice;
 }
 
@@ -499,7 +499,7 @@ thread_get_nice (void)
 int
 thread_get_load_avg (void) 
 {
-  /* Solution Code */
+
   return FP_ROUND (FP_MULT_MIX (load_avg, 100));
 }
 
@@ -507,11 +507,11 @@ thread_get_load_avg (void)
 int
 thread_get_recent_cpu (void) 
 {
-  /* Solution Code */
+
   return FP_ROUND (FP_MULT_MIX (thread_current()->recent_cpu, 100));
 }
 
-/* Solution Code */
+
 
 /* Recent CPU++; */
 void
@@ -658,7 +658,7 @@ init_thread (struct thread *t, const char *name, int priority)
   t->priority = priority;
   t->magic = THREAD_MAGIC;
 
-  /* Solution Code */
+
   t->base_priority = priority;
   list_init(&t->locks_holding);
   t->lock_waiting4 = NULL;
@@ -666,7 +666,7 @@ init_thread (struct thread *t, const char *name, int priority)
   t->recent_cpu = FP_CONST (0);
 
   old_level = intr_disable ();
-  /* Solution Code */
+
   list_insert_ordered(&all_list, &t->allelem, (list_less_func *)&thread_cmp_priority, NULL);
 
   intr_set_level (old_level);
